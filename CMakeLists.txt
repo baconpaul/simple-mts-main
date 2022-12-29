@@ -22,6 +22,8 @@ juce_add_plugin(${PROJECT_NAME}
     IS_MIDI_EFFECT FALSE
     
     FORMATS AU VST3 Standalone
+
+    COPY_PLUGIN_AFTER_BUILD TRUE
 )
 
 clap_juce_extensions_plugin(TARGET ${PROJECT_NAME}
