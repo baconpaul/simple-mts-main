@@ -17,6 +17,17 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    std::unique_ptr<juce::Button> loadSCL, loadKBM;
+
+    // Do this later
+    std::unique_ptr<juce::Timer> idleTimer;
+    void idle();
+
+    enum LoadType { SCL, KBM };
+    void doLoad(LoadType t);
+
+    std::unique_ptr<juce::FileChooser> fc;
+
 private:
 
     // This reference is provided as a quick way for your editor to

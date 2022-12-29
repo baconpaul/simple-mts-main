@@ -56,5 +56,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         juce::juce_audio_utils
         juce::juce_audio_devices
         tuning-library
+        oddsound-mts
         )
 

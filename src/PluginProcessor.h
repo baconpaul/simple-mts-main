@@ -75,8 +75,11 @@ public:
     Tunings::Tuning tuning;
     juce::String currentSCLString = "", currentKBMString = "";
 
+    std::atomic<int> numClients{0};
 private:
 
+    bool registeredMTS{false};
+    std::atomic<bool> repushTuning{false};
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleMTSMain)
 };

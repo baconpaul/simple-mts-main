@@ -10,6 +10,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "libMTSMaster.h"
 
 
 
@@ -24,10 +25,18 @@ SimpleMTSMain::SimpleMTSMain()
     setKBM( "", false );
     retune();
 
+    if (MTS_CanRegisterMaster())
+    {
+        MTS_RegisterMaster();
+        registeredMTS = true;
+        repushTuning = true;
+    }
 }
 
 SimpleMTSMain::~SimpleMTSMain()
 {
+    if (registeredMTS)
+        MTS_DeregisterMaster();
 }
 
 //==============================================================================
@@ -98,6 +107,12 @@ bool SimpleMTSMain::isBusesLayoutSupported (const BusesLayout& layouts) const
 
 void SimpleMTSMain::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    if (!registeredMTS)
+        return;
+
+    numClients = MTS_GetNumClients();
+
+
 }
 
 //==============================================================================
@@ -186,7 +201,26 @@ void SimpleMTSMain::setKBM( juce::String KBM, bool dretune )
 }
 
 void SimpleMTSMain::retune() {
-    std::cout << "Would update SCL/KBM for Master" << std::endl;
+    try
+    {
+        if (currentKBMString.isEmpty())
+            currentKBMString = Tunings::tuneA69To(440).rawText;
+        tuning = Tunings::Tuning(Tunings::parseSCLData(currentSCLString.toStdString()),
+                                 Tunings::parseKBMData(currentKBMString.toStdString()));
+        repushTuning = true;
+
+        repushTuning = false;
+        for (int i=0; i<128; ++i)
+        {
+            MTS_SetNoteTuning(tuning.frequencyForMidiNote(i), i);
+        }
+        MTS_SetScaleName(tuning.scale.name.c_str());
+    }
+    catch (const Tunings::TuningError &e)
+    {
+        // This is just sample code
+        std::cout << "TUNING ERROR " << e.what() << std::endl;
+    }
 }
 
 //==============================================================================
