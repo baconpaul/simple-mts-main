@@ -1,3 +1,4 @@
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 project(oddsound-mts VERSION 0.0.0 LANGUAGES CXX)
 
 add_library(${PROJECT_NAME}
