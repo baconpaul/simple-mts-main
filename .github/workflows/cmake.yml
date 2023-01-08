@@ -13,7 +13,11 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        os: [ ubuntu-latest, windows-2019, macOS-latest ]
 
     steps:
     
@@ -22,6 +26,7 @@ jobs:
         submodules: 'recursive'
         
     - name: Install Dependencies
+      if: runner.os == 'Linux'
       run: sudo apt-get install --no-install-recommends -y libx11-dev x11-xserver-utils libxrandr-dev libxinerama-dev libxcursor-dev
 
     - name: Configure CMake
@@ -31,30 +36,11 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
       
     - name: Compress
+      if: runner.os == 'Linux'
       run: |
         cd ${{github.workspace}}/build/simple-mts-main_artefacts
         tar -caf simple-mts-main.tar.xz Release
 
-    - name: Release
-      id: release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: build
-        release_name: build
-        body: automatic build
-        
-    - name: Upload
-      id: upload
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.release.outputs.upload_url }}
-        asset_path: ${{github.workspace}}/build/simple-mts-main_artefacts/simple-mts-main.tar.xz
-        asset_name: simple-mts-main.tar.xz
-        asset_content_type: application/x-compressed
